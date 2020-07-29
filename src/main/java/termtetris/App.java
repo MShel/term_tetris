@@ -5,12 +5,28 @@
  **************************************************************************/
 package termtetris;
 
+import java.io.IOException;
+import java.util.Scanner;
+
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+
+import canvas.Canvas;
+
 public class App {
     public String getGreeting() {
         return "Hello world.";
     }
 
-    public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+    public static void main(String[] args) throws IOException {
+        Scanner keyboardScanner = new Scanner(System.in);
+        Canvas canvas = new Canvas(getTerminal());
+
+        Game game = new Game(keyboardScanner, canvas);
+        game.start();
+    }
+
+    private static Terminal getTerminal() throws IOException {
+        return TerminalBuilder.terminal();
     }
 }
