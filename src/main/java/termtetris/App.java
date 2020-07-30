@@ -20,8 +20,10 @@ public class App {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         Scanner keyboardScanner = new Scanner(System.in);
-        Canvas canvas = new Canvas(getTerminal());
-
+        Terminal terminal = getTerminal();
+        Canvas canvas = new Canvas(terminal);
+        KeyboardListener keyboardListener = new KeyboardListener("keyboard listener", terminal, canvas);
+        keyboardListener.start();
         Game game = new Game(keyboardScanner, canvas);
         game.start();
     }

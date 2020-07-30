@@ -22,7 +22,7 @@ public class Game {
     }
 
     public void start() throws IOException, InterruptedException {
-        System.out.println(canvas);
+
         canvas.dropShape();
     }
 }

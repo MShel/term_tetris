@@ -6,12 +6,11 @@
 package canvas;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.jline.terminal.Terminal;
 import com.sun.tools.javac.util.Pair;
 
-import shapes.Shape;
+import shapes.AbstractShape;
 import shapes.ZShape;
 
 public class Canvas {
@@ -20,26 +19,36 @@ public class Canvas {
 
     private int height;
 
-    private Shape[] shapes;
+    private AbstractShape[] shapes;
 
     private Terminal terminal;
+
+    private AbstractShape currShape;
 
     public Canvas(Terminal terminal) {
         this.terminal = terminal;
         this.height = terminal.getHeight();
         this.width = terminal.getWidth();
-        this.shapes = new Shape[]{
-                new ZShape(Pair.of(width/2, 0))
-        };
+        currShape = new ZShape(Pair.of(width/2, 0));
     }
 
-    public void drawShape() throws IOException {
-        Shape shape = this.shapes[0];
+    public void dropShape() throws IOException, InterruptedException {
+        terminal.flush();
+
+        for (int canvasRow = 0; canvasRow < height; canvasRow++) {
+            currShape.setCoordinates(Pair.of(currShape.getCurrCenter().fst, canvasRow++));
+            drawShape(currShape);
+            terminal.flush();
+            Thread.sleep(500);
+        }
+    }
+
+    private void drawShape(AbstractShape shape) throws IOException {
         terminal.flush();
         for (int canvasRow = 0; canvasRow < height; canvasRow++) {
             for (int canvasColumn = 0; canvasColumn < width; canvasColumn++) {
                 Pair<Integer, Integer> pairToTest = Pair.of(canvasColumn, canvasRow);
-                if (shape.getCoordinates().contains(pairToTest)){
+                if (shape.getCurrCoordinates().contains(pairToTest)){
                     System.out.print("*");
                 }else {
                     System.out.print(" ");
@@ -49,16 +58,15 @@ public class Canvas {
         }
     }
 
-    public void dropShape() throws IOException, InterruptedException {
-        Shape shape = this.shapes[0];
-        terminal.flush();
 
-        for (int canvasRow = 0; canvasRow < height; canvasRow++) {
-            shape.setCoordinates(Pair.of(width/2, canvasRow));
-            drawShape();
-            terminal.flush();
-            Thread.sleep(500);
-        }
+    public void moveLeft(){
+        Pair<Integer, Integer> currCenter = currShape.getCurrCenter();
+        currShape.setCoordinates(Pair.of(currCenter.fst-1, currCenter.snd));
+    }
+
+    public void moveRight(){
+        Pair<Integer, Integer> currCenter = currShape.getCurrCenter();
+        currShape.setCoordinates(Pair.of(currCenter.fst+1, currCenter.snd));
     }
 
     @Override
