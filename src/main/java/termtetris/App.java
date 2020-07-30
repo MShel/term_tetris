@@ -18,7 +18,7 @@ public class App {
         return "Hello world.";
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         Scanner keyboardScanner = new Scanner(System.in);
         Canvas canvas = new Canvas(getTerminal());
 

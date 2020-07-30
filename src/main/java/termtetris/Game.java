@@ -5,6 +5,7 @@
  **************************************************************************/
 package termtetris;
 
+import java.io.IOException;
 import java.util.Scanner;
 
 import canvas.Canvas;
@@ -20,10 +21,8 @@ public class Game {
         this.canvas = canvas;
     }
 
-    public void start() {
+    public void start() throws IOException, InterruptedException {
         System.out.println(canvas);
-        while (true) {
-            System.out.println(keyboardScanner.next());
-        }
+        canvas.dropShape();
     }
 }
