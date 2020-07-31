@@ -14,10 +14,12 @@ import shapes.AbstractShape;
 import shapes.ZShape;
 
 public class Canvas {
-
+    private static int DEFAULT_SPEED = 500;
     private int width;
 
     private int height;
+
+    private int speed;
 
     private AbstractShape[] shapes;
 
@@ -34,12 +36,13 @@ public class Canvas {
 
     public void dropShape() throws IOException, InterruptedException {
         terminal.flush();
+        this.speed = DEFAULT_SPEED;
 
         for (int canvasRow = 0; canvasRow < height; canvasRow++) {
             currShape.setCoordinates(Pair.of(currShape.getCurrCenter().fst, canvasRow++));
             drawShape(currShape);
             terminal.flush();
-            Thread.sleep(500);
+            Thread.sleep(speed);
         }
     }
 
@@ -50,23 +53,33 @@ public class Canvas {
                 Pair<Integer, Integer> pairToTest = Pair.of(canvasColumn, canvasRow);
                 if (shape.getCurrCoordinates().contains(pairToTest)){
                     System.out.print("*");
-                }else {
-                    System.out.print(" ");
+                    continue;
                 }
+
+                System.out.print(" ");
             }
             System.out.println();
         }
     }
 
 
-    public void moveLeft(){
+    public void moveShapeLeft(){
         Pair<Integer, Integer> currCenter = currShape.getCurrCenter();
         currShape.setCoordinates(Pair.of(currCenter.fst-1, currCenter.snd));
     }
 
-    public void moveRight(){
+    public void moveShapeRight(){
         Pair<Integer, Integer> currCenter = currShape.getCurrCenter();
         currShape.setCoordinates(Pair.of(currCenter.fst+1, currCenter.snd));
+    }
+
+    public void rotateShape() {
+        currShape.rotate();
+    }
+
+
+    public void speedUp(){
+        speed *= 6;
     }
 
     @Override

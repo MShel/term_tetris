@@ -14,14 +14,17 @@ public abstract class AbstractShape {
     protected int[][][] positions;
     protected List<Pair<Integer, Integer>> currCoordinates;
     protected int[][] currPosition;
+    protected int currPositionPointer;
     protected Pair<Integer, Integer> currCenter;
 
-    int[][] rotateLeft() {
-        return null;
-    }
+    public void rotate() {
+        if(currPositionPointer < positions.length){
+            currPositionPointer+=1;
+        } else {
+            currPositionPointer = 0;
+        }
 
-    int[][] rotateRight(){
-        return null;
+        currPosition = positions[currPositionPointer];
     }
 
     public void setCoordinates(Pair<Integer, Integer> shapeCenter) {

@@ -30,10 +30,10 @@ public class KeyboardListener extends Thread {
                 int value = terminal.reader().read();
                 switch (value) {
                     case 68:
-                        canvas.moveLeft();
+                        canvas.moveShapeLeft();
                         break;
                     case 67:
-                        canvas.moveRight();
+                        canvas.moveShapeRight();
                         break;
                     default:
                         //System.out.println(value);
