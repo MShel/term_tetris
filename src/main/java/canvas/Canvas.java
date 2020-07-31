@@ -6,11 +6,13 @@
 package canvas;
 
 import java.io.IOException;
+import java.util.Random;
 
 import org.jline.terminal.Terminal;
 import com.sun.tools.javac.util.Pair;
 
 import shapes.AbstractShape;
+import shapes.IShape;
 import shapes.ZShape;
 
 public class Canvas {
@@ -31,13 +33,16 @@ public class Canvas {
         this.terminal = terminal;
         this.height = terminal.getHeight();
         this.width = terminal.getWidth();
-        currShape = new ZShape(Pair.of(width/2, 0));
+        this.shapes = new AbstractShape[] {
+                new ZShape(Pair.of(width / 2, 0)),
+                new IShape(Pair.of(width / 2, 0))
+        };
     }
 
     public void dropShape() throws IOException, InterruptedException {
         terminal.flush();
         this.speed = DEFAULT_SPEED;
-
+        this.currShape = nextShape();
         for (int canvasRow = 0; canvasRow < height; canvasRow++) {
             currShape.setCoordinates(Pair.of(currShape.getCurrCenter().fst, canvasRow++));
             drawShape(currShape);
@@ -62,6 +67,10 @@ public class Canvas {
         }
     }
 
+    private AbstractShape nextShape() {
+        int rndPointer = new Random().nextInt(this.shapes.length);
+        return this.shapes[rndPointer];
+    }
 
     public void moveShapeLeft(){
         Pair<Integer, Integer> currCenter = currShape.getCurrCenter();
@@ -79,7 +88,7 @@ public class Canvas {
 
 
     public void speedUp(){
-        speed *= 6;
+        speed = 15;
     }
 
     @Override

@@ -35,8 +35,12 @@ public class KeyboardListener extends Thread {
                     case 67:
                         canvas.moveShapeRight();
                         break;
-                    default:
-                        //System.out.println(value);
+                    case 114:
+                        canvas.rotateShape();
+                        break;
+                    case 32:
+                        canvas.speedUp();
+                        break;
                 }
             }
         } catch (IOException e) {

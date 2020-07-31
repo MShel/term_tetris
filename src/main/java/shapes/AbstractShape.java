@@ -18,9 +18,9 @@ public abstract class AbstractShape {
     protected Pair<Integer, Integer> currCenter;
 
     public void rotate() {
-        if(currPositionPointer < positions.length){
-            currPositionPointer+=1;
-        } else {
+        currPositionPointer += 1;
+
+        if (currPositionPointer >= positions.length) {
             currPositionPointer = 0;
         }
 
@@ -36,7 +36,7 @@ public abstract class AbstractShape {
 
             for (int row = 0; row < currPosition.length; row++) {
                 for (int column = 0; column < currPosition[0].length; column++) {
-                    if (currPosition[row][column] != 0) {
+                    if (currPosition[column][row] != 0) {
                         currCoordinates.add(Pair.of(rowCenter + row, column + columnCenter));
                     }
                 }
