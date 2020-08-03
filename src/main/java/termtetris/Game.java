@@ -12,12 +12,9 @@ import canvas.Canvas;
 
 public class Game {
 
-    private final Scanner keyboardScanner;
-
     private final Canvas canvas;
 
-    public Game(Scanner keyboardScanner, Canvas canvas) {
-        this.keyboardScanner = keyboardScanner;
+    public Game(Canvas canvas) {
         this.canvas = canvas;
     }
 

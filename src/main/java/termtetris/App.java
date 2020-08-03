@@ -1,15 +1,10 @@
-/***************************************************************************
- * COPYRIGHT (C) 2012-2020, Rapid7 LLC, Boston, MA, USA.
- * All rights reserved. This material contains unpublished, copyrighted
- * work including confidential and proprietary information of Rapid7.
- **************************************************************************/
 package termtetris;
 
 import java.io.IOException;
-import java.util.Scanner;
 
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
+import org.jline.utils.InfoCmp;
 
 import canvas.Canvas;
 
@@ -19,16 +14,22 @@ public class App {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        Scanner keyboardScanner = new Scanner(System.in);
+
         Terminal terminal = getTerminal();
+
         Canvas canvas = new Canvas(terminal);
         KeyboardListener keyboardListener = new KeyboardListener("keyboard listener", terminal, canvas);
         keyboardListener.start();
-        Game game = new Game(keyboardScanner, canvas);
+        Game game = new Game(canvas);
         game.start();
     }
 
     private static Terminal getTerminal() throws IOException {
-        return TerminalBuilder.terminal();
+        Terminal terminal = TerminalBuilder.terminal();
+        terminal.puts(InfoCmp.Capability.enter_ca_mode);
+        terminal.puts(InfoCmp.Capability.clear_screen);
+//        terminal.puts(InfoCmp.Capability.bell);
+
+        return terminal;
     }
 }
