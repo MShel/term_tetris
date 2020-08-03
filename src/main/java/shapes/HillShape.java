@@ -6,8 +6,8 @@ public class HillShape extends AbstractShape {
     public HillShape(Pair<Integer, Integer> shapeCenter) {
         this.positions = new int[][][] {
 
-                { { 1, 1, 1 },
-                  { 0, 1, 0 } },
+                { { 0, 1, 0 },
+                  { 1, 1, 1 } },
 
                 { { 0, 1, 0 },
                   { 0, 1, 1 },
