@@ -10,7 +10,6 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedString;
 import org.jline.utils.Display;
-import org.jline.utils.InfoCmp;
 
 import shapes.*;
 
@@ -46,14 +45,14 @@ public class Canvas {
                 new HillShape(topCenter)
         };
         this.canvasValueMatrix = new Shape[this.height + 1][this.width + 1];
+        this.display = new Display(terminal, false);
+        display.resize(terminal.getHeight(), terminal.getWidth());
+
         populateValueMatrix();
-        initCanvas();
-        this.display = new Display(terminal, true);
-        display.resize(width+1, height+1);
+        printCanvas();
     }
 
     public void dropShape() throws IOException, InterruptedException {
-        terminal.puts(InfoCmp.Capability.bell);
         this.speed = DEFAULT_SPEED;
         this.currShape = nextShape();
         Pair<Integer, Integer> currCoord;
@@ -73,48 +72,53 @@ public class Canvas {
                 }
             }
             drawShape(currShape);
+            terminal.flush();
             Thread.sleep(speed);
             prevShapeCoords = currShape.getCurrCoordinates();
         }
     }
 
 
-    private void initCanvas() {
+    private void printCanvas() {
+        display.clear();
         terminal.flush();
-        for (int canvasRow = 1; canvasRow < height - 1; canvasRow++) {
+        List<AttributedString> attributedStrings = new ArrayList<>();
+        for (int canvasRow = 0; canvasRow < height; canvasRow++) {
+            StringBuilder stringBuilder = new StringBuilder();
             for (int canvasColumn = 0; canvasColumn < width; canvasColumn++) {
                 if (canvasValueMatrix[canvasRow][canvasColumn] != null) {
-                    System.out.print(canvasValueMatrix[canvasRow][canvasColumn].getColor());
-                    System.out.print(canvasValueMatrix[canvasRow][canvasColumn].getSymbol());
-                    System.out.print("\u001b[0m");
-                    continue;
+                    //stringBuilder.append(canvasValueMatrix[canvasRow][canvasColumn].getColor());
+                    stringBuilder.append(canvasValueMatrix[canvasRow][canvasColumn].getSymbol());
+                    //stringBuilder.append("\u001b[0m");
                 }
-                System.out.print(" ");
+                stringBuilder.append(" ");
             }
-            System.out.print("\n");
+            attributedStrings.add(new AttributedString(stringBuilder.toString()));
         }
+        display.update(attributedStrings, terminal.getSize().cursorPos(0,0), true);
     }
 
     private void drawShape(AbstractShape shape) throws IOException {
         ArrayList<AttributedString> toUpdate = new ArrayList<>();
-        for (int canvasRow = 1; canvasRow < height - 1; canvasRow++) {
+        for (int canvasRow = 0; canvasRow < height; canvasRow++) {
             StringBuilder rowStringBuilder = new StringBuilder();
             for (int canvasColumn = 0; canvasColumn < width; canvasColumn++) {
                 Pair<Integer, Integer> pairToTest = Pair.of(canvasColumn, canvasRow);
                 if (shape.getCurrCoordinates().contains(pairToTest)) {
-                    rowStringBuilder.append(shape.getColor());
                     rowStringBuilder.append(shape.getSymbol());
-                    rowStringBuilder.append("\u001b[0m");
-                    continue;
                 } else {
-                    rowStringBuilder.append(" ");
+                    if(canvasValueMatrix[canvasRow][canvasColumn]!=null) {
+                        rowStringBuilder.append(canvasValueMatrix[canvasRow][canvasColumn].getSymbol());
+                    } else {
+                        rowStringBuilder.append(" ");
+                    }
                 }
             }
             AttributedString attributedString = new AttributedString(rowStringBuilder.toString());
             toUpdate.add(attributedString);
         }
-
-        display.update(toUpdate, 0, true);
+        display.update(toUpdate, terminal.getSize().cursorPos(0,0), false);
+        terminal.flush();
     }
 
     private void populateValueMatrix() {

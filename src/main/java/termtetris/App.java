@@ -26,9 +26,6 @@ public class App {
 
     private static Terminal getTerminal() throws IOException {
         Terminal terminal = TerminalBuilder.terminal();
-        terminal.puts(InfoCmp.Capability.enter_ca_mode);
-        terminal.puts(InfoCmp.Capability.clear_screen);
-//        terminal.puts(InfoCmp.Capability.bell);
 
         return terminal;
     }
