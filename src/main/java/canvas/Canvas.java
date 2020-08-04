@@ -1,6 +1,5 @@
 package canvas;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -8,7 +7,6 @@ import java.util.Random;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedString;
 import org.jline.utils.Display;
 
@@ -41,12 +39,12 @@ public class Canvas {
         this.score = 0;
         Pair<Integer, Integer> topCenter = Pair.of(width / 2, 2);
         this.shapes = new AbstractShape[]{
-                new ZShape(topCenter),
-                new LeftSevenShape(topCenter),
+                //new ZShape(topCenter),
+                //new LeftSevenShape(topCenter),
                 new PoleShape(topCenter),
-                new RightSevenShape(topCenter),
+                //new RightSevenShape(topCenter),
                 new SquareShape(topCenter),
-                new HillShape(topCenter)
+                //new HillShape(topCenter)
         };
         this.canvasValueMatrix = new Shape[this.height + 1][this.width + 1];
         this.display = new Display(terminal, false);
@@ -55,6 +53,7 @@ public class Canvas {
     }
 
     public void dropShape() throws InterruptedException {
+        checkCleanFullLines();
         this.currShape = nextShape();
         this.speed = DEFAULT_SPEED;
         Pair<Integer, Integer> currCoord;
@@ -79,6 +78,36 @@ public class Canvas {
         }
     }
 
+    private void checkCleanFullLines() {
+        //ignoring ceiling and bottom
+        List<Integer> cleanedUpRows = new ArrayList<>();
+        for (int row = 2; row < canvasValueMatrix.length - 2; row++) {
+            boolean fullRow = true;
+            //ignoring walls
+            for (int column = 1; column < canvasValueMatrix[0].length - 2; column++) {
+                if (canvasValueMatrix[row][column] == null) {
+                    fullRow = false;
+                    break;
+                }
+            }
+
+            if (fullRow) {
+                score += 10;
+                cleanedUpRows.add(row);
+            }
+        }
+
+        if (! cleanedUpRows.isEmpty()) {
+            for (int row = canvasValueMatrix.length - 1; row > 0; row--) {
+                if(cleanedUpRows.contains(row)) {
+                    for (int column = 1; column < canvasValueMatrix[0].length - 1; column++) {
+                        canvasValueMatrix[row][column] = canvasValueMatrix[row - 1][column];
+                        cleanedUpRows.add(row - 1);
+                    }
+                }
+            }
+        }
+    }
 
     private void drawShape(AbstractShape shape)  {
         ArrayList<AttributedString> toUpdate = new ArrayList<>();
