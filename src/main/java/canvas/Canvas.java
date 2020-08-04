@@ -49,7 +49,6 @@ public class Canvas {
         display.resize(terminal.getHeight(), terminal.getWidth());
 
         populateValueMatrix();
-        printCanvas();
     }
 
     public void dropShape() throws IOException, InterruptedException {
@@ -79,25 +78,6 @@ public class Canvas {
     }
 
 
-    private void printCanvas() {
-        display.clear();
-        terminal.flush();
-        List<AttributedString> attributedStrings = new ArrayList<>();
-        for (int canvasRow = 0; canvasRow < height; canvasRow++) {
-            StringBuilder stringBuilder = new StringBuilder();
-            for (int canvasColumn = 0; canvasColumn < width; canvasColumn++) {
-                if (canvasValueMatrix[canvasRow][canvasColumn] != null) {
-                    //stringBuilder.append(canvasValueMatrix[canvasRow][canvasColumn].getColor());
-                    stringBuilder.append(canvasValueMatrix[canvasRow][canvasColumn].getSymbol());
-                    //stringBuilder.append("\u001b[0m");
-                }
-                stringBuilder.append(" ");
-            }
-            attributedStrings.add(new AttributedString(stringBuilder.toString()));
-        }
-        display.update(attributedStrings, terminal.getSize().cursorPos(0,0), true);
-    }
-
     private void drawShape(AbstractShape shape) throws IOException {
         ArrayList<AttributedString> toUpdate = new ArrayList<>();
         for (int canvasRow = 0; canvasRow < height; canvasRow++) {
@@ -124,11 +104,11 @@ public class Canvas {
     private void populateValueMatrix() {
         for (int canvasRow = 0; canvasRow < height; canvasRow++) {
             for (int canvasColumn = 0; canvasColumn < width; canvasColumn++) {
-                if (canvasRow == 1 && canvasColumn < width - 10) {
+                if (canvasRow == 1 && canvasColumn < width - 1) {
                     canvasValueMatrix[canvasRow][canvasColumn] = new CeilingShape();
-                } else if (canvasColumn == 0 || canvasColumn == width - 10 ) {
+                } else if (canvasColumn == 0 || canvasColumn == width-1 ) {
                     canvasValueMatrix[canvasRow][canvasColumn] = new WallShape();
-                } else if (canvasRow == height - 2 && canvasColumn < width - 10) {
+                } else if (canvasRow == height - 2 && canvasColumn < width - 1) {
                     canvasValueMatrix[canvasRow][canvasColumn] = new BottomShape();
                 } else {
                     canvasValueMatrix[canvasRow][canvasColumn] = null;
