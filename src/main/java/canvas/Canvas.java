@@ -39,12 +39,12 @@ public class Canvas {
         this.score = 0;
         Pair<Integer, Integer> topCenter = Pair.of(width / 2, 2);
         this.shapes = new AbstractShape[]{
-                //new ZShape(topCenter),
-                //new LeftSevenShape(topCenter),
+                new ZShape(topCenter),
+                new LeftSevenShape(topCenter),
                 new PoleShape(topCenter),
-                //new RightSevenShape(topCenter),
+                new RightSevenShape(topCenter),
                 new SquareShape(topCenter),
-                //new HillShape(topCenter)
+                new HillShape(topCenter)
         };
         this.canvasValueMatrix = new Shape[this.height + 1][this.width + 1];
         this.display = new Display(terminal, false);
@@ -92,19 +92,18 @@ public class Canvas {
             }
 
             if (fullRow) {
-                score += 10;
+                score += width;
                 cleanedUpRows.add(row);
+                moveDownRowsUpTo(row);
             }
         }
 
-        if (! cleanedUpRows.isEmpty()) {
-            for (int row = canvasValueMatrix.length - 1; row > 0; row--) {
-                if(cleanedUpRows.contains(row)) {
-                    for (int column = 1; column < canvasValueMatrix[0].length - 1; column++) {
-                        canvasValueMatrix[row][column] = canvasValueMatrix[row - 1][column];
-                        cleanedUpRows.add(row - 1);
-                    }
-                }
+    }
+
+    private void moveDownRowsUpTo(int rowToMoveTo) {
+        for (int row = rowToMoveTo; row > 2; row--){
+            for (int column = 1; column < canvasValueMatrix[0].length - 2; column++) {
+                canvasValueMatrix[row][column] = canvasValueMatrix[row - 1][column];
             }
         }
     }

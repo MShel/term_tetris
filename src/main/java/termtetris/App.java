@@ -8,13 +8,10 @@ import org.jline.terminal.TerminalBuilder;
 import canvas.Canvas;
 
 public class App {
-    public String getGreeting() {
-        return "Hello world.";
-    }
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
-        Terminal terminal = getTerminal();
+        Terminal terminal = TerminalBuilder.terminal();
         String speed = null;
         if (args.length > 0) {
             speed = args[0];
@@ -24,11 +21,5 @@ public class App {
         keyboardListener.start();
         Game game = new Game(canvas);
         game.start();
-    }
-
-    private static Terminal getTerminal() throws IOException {
-        Terminal terminal = TerminalBuilder.terminal();
-
-        return terminal;
     }
 }
