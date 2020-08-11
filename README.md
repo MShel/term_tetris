@@ -13,10 +13,13 @@ java -jar TermTetris.jar {speed}
 2. press `space` to drop shape right away
 3. press `<-` to move shape left
 4. press `->` to move shape right
+5. press `p` to pause game
 
 P.S {speed} is delay in ms in between shapes been making its way down(the smaller it is the faster shapes will drop)
 default is 300ms 
 
+* Score and the next shape should appear in top of the terminal with game.
+* game field is whatever size of the terminal, it does not require full screen. 
 ### To build
 
 1. Install [gradle](https://gradle.org/)

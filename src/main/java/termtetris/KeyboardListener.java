@@ -41,6 +41,9 @@ public class KeyboardListener extends Thread {
                     case 32:
                         canvas.speedUp();
                         break;
+                    case 112:
+                        canvas.pause();
+                        break;
                 }
             }
         } catch (IOException e) {

@@ -20,7 +20,9 @@ public class Game {
 
     public void start() throws IOException, InterruptedException {
         while (true) {
-            canvas.dropShape();
+            if(!canvas.isPaused()) {
+                canvas.dropShape();
+            }
         }
     }
 }
