@@ -17,9 +17,9 @@ public class App {
             speed = args[0];
         }
         Canvas canvas = new Canvas(terminal, speed);
-        KeyboardListener keyboardListener = new KeyboardListener("keyboard listener", terminal, canvas);
-        keyboardListener.start();
         Game game = new Game(canvas);
+        KeyboardListener keyboardListener = new KeyboardListener("keyboard listener", terminal, canvas, game);
+        keyboardListener.start();
         game.start();
     }
 }

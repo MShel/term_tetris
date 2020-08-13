@@ -22,10 +22,6 @@ public class Canvas {
 
     private int speed;
 
-    private boolean paused = false;
-
-    private Integer frozenOnRow;
-
     private AbstractShape[] shapes;
 
     private Terminal terminal;
@@ -38,6 +34,8 @@ public class Canvas {
 
     private AbstractShape nextShape;
 
+    private List<Pair<Integer, Integer>> prevShapeCoords = new ArrayList<>();
+
     private int score;
 
     public Canvas(Terminal terminal, String speed) {
@@ -47,15 +45,9 @@ public class Canvas {
         DEFAULT_SPEED = (StringUtils.isNumeric(speed)) ? Integer.parseInt(speed) : DEFAULT_SPEED;
         this.score = 0;
         Pair<Integer, Integer> topCenter = Pair.of(width / 2, 0);
-        this.shapes = new AbstractShape[]{
-                new ZShapeLeft(topCenter),
-                new ZShapeRight(topCenter),
-                new LeftSevenShape(topCenter),
-                new PoleShape(topCenter),
-                new RightSevenShape(topCenter),
-                new SquareShape(topCenter),
-                new HillShape(topCenter)
-        };
+        this.shapes = new AbstractShape[] { new ZShapeLeft(topCenter), new ZShapeRight(topCenter),
+                new LeftSevenShape(topCenter), new PoleShape(topCenter), new RightSevenShape(topCenter),
+                new SquareShape(topCenter), new HillShape(topCenter) };
         this.canvasValueMatrix = new Shape[this.height + 1][this.width + 1];
         this.display = new Display(terminal, false);
         display.resize(terminal.getHeight(), terminal.getWidth());
@@ -63,32 +55,35 @@ public class Canvas {
         nextShape();
     }
 
-    public void dropShape() throws InterruptedException {
+    public Integer dropShape(Integer dropFrom) {
         checkCleanFullLines();
-        this.currShape = nextShape;
-        nextShape();
-        this.speed = DEFAULT_SPEED;
-        Pair<Integer, Integer> currCoord;
-        List<Pair<Integer, Integer>> prevShapeCoords = new ArrayList<>();
-        for (int canvasRow = CEILING_ROW + 1; canvasRow < height; canvasRow++) {
-            currCoord = Pair.of(currShape.getCurrCenter().getLeft(), canvasRow);
+
+        if (dropFrom == null) {
+            this.currShape = nextShape;
+            nextShape();
+            this.speed = DEFAULT_SPEED;
+            dropFrom = CEILING_ROW + 1;
+        }
+
+        if (dropFrom < height) {
+            Pair<Integer, Integer> currCoord = Pair.of(currShape.getCurrCenter().getLeft(), dropFrom);
             currShape.setCoordinates(currCoord);
             for (Pair<Integer, Integer> shapeCoord : currShape.getCurrCoordinates()) {
-                if (canvasValueMatrix[shapeCoord.getRight()][shapeCoord.getLeft()] != null &&
-                        !canvasValueMatrix[shapeCoord.getRight()][shapeCoord.getLeft()].isWall() &&
-                        !canvasValueMatrix[shapeCoord.getRight()][shapeCoord.getLeft()].isCeiling()
-                ) {
+                if (canvasValueMatrix[shapeCoord.getRight()][shapeCoord.getLeft()] != null
+                        && !canvasValueMatrix[shapeCoord.getRight()][shapeCoord.getLeft()].isWall()
+                        && !canvasValueMatrix[shapeCoord.getRight()][shapeCoord.getLeft()].isCeiling()) {
                     for (Pair<Integer, Integer> prevShapeCoord : prevShapeCoords) {
                         canvasValueMatrix[prevShapeCoord.getRight()][prevShapeCoord.getLeft()] = currShape;
                     }
-                    return;
+                    return null;
                 }
             }
 
             drawShape(currShape);
-            Thread.sleep(speed);
             prevShapeCoords = currShape.getCurrCoordinates();
+            return dropFrom + 1;
         }
+        return null;
     }
 
     private void checkCleanFullLines() {
@@ -112,17 +107,17 @@ public class Canvas {
     }
 
     private void moveDownRowsUpTo(int rowToMoveTo) {
-        for (int row = rowToMoveTo; row > CEILING_ROW + 1; row--){
+        for (int row = rowToMoveTo; row > CEILING_ROW + 1; row--) {
             for (int column = 1; column < canvasValueMatrix[0].length - 2; column++) {
                 canvasValueMatrix[row][column] = canvasValueMatrix[row - 1][column];
             }
         }
     }
 
-    private void drawShape(AbstractShape shape)  {
+    private Integer drawShape(AbstractShape shape) {
         ArrayList<AttributedString> toUpdate = new ArrayList<>();
         addMenuHeader(toUpdate);
-
+        Integer lastRowFilledWShape = null;
         for (int canvasRow = CEILING_ROW; canvasRow < height; canvasRow++) {
             StringBuilder rowStringBuilder = new StringBuilder();
             for (int canvasColumn = 0; canvasColumn < width; canvasColumn++) {
@@ -132,6 +127,7 @@ public class Canvas {
                     rowStringBuilder.append(shape.getColor());
                     rowStringBuilder.append(shape.getSymbol());
                     rowStringBuilder.append(CLEAR_ANSI_STYLE);
+                    lastRowFilledWShape = canvasRow;
                 } else {
                     if (canvasValueMatrix[canvasRow][canvasColumn] != null) {
                         rowStringBuilder.append(canvasValueMatrix[canvasRow][canvasColumn].getColor());
@@ -145,7 +141,8 @@ public class Canvas {
             AttributedString attributedString = AttributedString.fromAnsi(rowStringBuilder.toString());
             toUpdate.add(attributedString);
         }
-        display.update(toUpdate, terminal.getSize().cursorPos(0,0), true);
+        display.update(toUpdate, terminal.getSize().cursorPos(0, 0), true);
+        return lastRowFilledWShape;
     }
 
     private void addMenuHeader(List<AttributedString> toUpdate) {
@@ -154,7 +151,7 @@ public class Canvas {
             StringBuilder rowStringBuilder = new StringBuilder();
             for (int column = 0; column < width; column++) {
                 Pair<Integer, Integer> pairToTest = Pair.of(column, row);
-                if (nextShape.getCurrCoordinates().contains(pairToTest)){
+                if (nextShape.getCurrCoordinates().contains(pairToTest)) {
                     rowStringBuilder.append(nextShape.getColor());
                     rowStringBuilder.append(nextShape.getSymbol());
                     rowStringBuilder.append(CLEAR_ANSI_STYLE);
@@ -169,15 +166,14 @@ public class Canvas {
         }
     }
 
-
     private void populateValueMatrix() {
         for (int canvasRow = 0; canvasRow < height; canvasRow++) {
             for (int canvasColumn = 0; canvasColumn < width; canvasColumn++) {
                 if (canvasRow == CEILING_ROW && canvasColumn < width) {
                     canvasValueMatrix[canvasRow][canvasColumn] = new CeilingShape();
-                } else if (canvasColumn == 0 || canvasColumn == width-1 ) {
+                } else if (canvasColumn == 0 || canvasColumn == width - 1) {
                     canvasValueMatrix[canvasRow][canvasColumn] = new WallShape();
-                } else if (canvasRow == height-1 && canvasColumn < width) {
+                } else if (canvasRow == height - 1 && canvasColumn < width) {
                     canvasValueMatrix[canvasRow][canvasColumn] = new BottomShape();
                 } else {
                     canvasValueMatrix[canvasRow][canvasColumn] = null;
@@ -189,7 +185,7 @@ public class Canvas {
     private AbstractShape nextShape() {
         int rndPointer = new Random().nextInt(this.shapes.length);
         AbstractShape nextShape = this.shapes[rndPointer];
-        nextShape.setCoordinates(Pair.of(width/2, 1));
+        nextShape.setCoordinates(Pair.of(width / 2, 1));
         this.nextShape = nextShape;
         return nextShape;
     }
@@ -200,7 +196,7 @@ public class Canvas {
             currShape.setCoordinates(Pair.of(currCenter.getLeft() - 1, currCenter.getRight()));
             for (Pair<Integer, Integer> shapeCoord : currShape.getCurrCoordinates()) {
                 if (canvasValueMatrix[shapeCoord.getRight()][shapeCoord.getLeft()] != null) {
-                    currShape.setCoordinates(Pair.of(currCenter.getLeft() , currCenter.getRight()));
+                    currShape.setCoordinates(Pair.of(currCenter.getLeft(), currCenter.getRight()));
                     return;
                 }
             }
@@ -213,34 +209,23 @@ public class Canvas {
             currShape.setCoordinates(Pair.of(currCenter.getLeft() + 1, currCenter.getRight()));
             for (Pair<Integer, Integer> shapeCoord : currShape.getCurrCoordinates()) {
                 if (canvasValueMatrix[shapeCoord.getRight()][shapeCoord.getLeft()] != null) {
-                    currShape.setCoordinates(Pair.of(currCenter.getLeft() , currCenter.getRight()));
+                    currShape.setCoordinates(Pair.of(currCenter.getLeft(), currCenter.getRight()));
                     return;
                 }
             }
         }
     }
 
+    public int getSpeed() {
+        return speed;
+    }
+
     public void rotateShape() {
         currShape.rotate();
     }
 
-
     public void speedUp() {
         speed = 15;
-    }
-
-    public void pause() {
-        this.paused = ! paused;
-        if (this.paused) {
-            System.out.println("!!! Paused !!!");
-        } else {
-            System.out.println("!!! UnPaused !!!");
-        }
-    }
-
-
-    public boolean isPaused(){
-        return paused;
     }
 
     @Override

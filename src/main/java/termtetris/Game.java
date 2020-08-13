@@ -6,7 +6,6 @@
 package termtetris;
 
 import java.io.IOException;
-import java.util.Scanner;
 
 import canvas.Canvas;
 
@@ -14,15 +13,28 @@ public class Game {
 
     private final Canvas canvas;
 
+    private boolean paused;
+
+    private boolean finished;
+
     public Game(Canvas canvas) {
+        this.paused = false;
+        this.finished = false;
         this.canvas = canvas;
     }
 
-    public void start() throws IOException, InterruptedException {
+    public void start() throws InterruptedException {
+        Integer topRow = null;
         while (true) {
-            if(!canvas.isPaused()) {
-                canvas.dropShape();
+            if (!paused) {
+                topRow = canvas.dropShape(topRow);
             }
+
+            Thread.sleep(canvas.getSpeed());
         }
+    }
+
+    public synchronized void pause()  {
+        paused = !paused;
     }
 }

@@ -17,10 +17,13 @@ public class KeyboardListener extends Thread {
 
     Canvas canvas;
 
-    public KeyboardListener(String name, Terminal terminal, Canvas canvas) {
+    Game game;
+
+    public KeyboardListener(String name, Terminal terminal, Canvas canvas, Game game) {
         super(name);
         this.canvas = canvas;
         this.terminal = terminal;
+        this.game = game;
     }
 
     public void run() {
@@ -42,7 +45,7 @@ public class KeyboardListener extends Thread {
                         canvas.speedUp();
                         break;
                     case 112:
-                        canvas.pause();
+                        game.pause();
                         break;
                 }
             }
