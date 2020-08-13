@@ -36,12 +36,15 @@ public class Canvas {
 
     private List<Pair<Integer, Integer>> prevShapeCoords = new ArrayList<>();
 
+    private boolean gameWon;
+
     private int score;
 
     public Canvas(Terminal terminal, String speed) {
         this.terminal = terminal;
         this.height = terminal.getHeight();
         this.width = terminal.getWidth();
+        this.gameWon = false;
         DEFAULT_SPEED = (StringUtils.isNumeric(speed)) ? Integer.parseInt(speed) : DEFAULT_SPEED;
         this.score = 0;
         Pair<Integer, Integer> topCenter = Pair.of(width / 2, 0);
@@ -56,8 +59,6 @@ public class Canvas {
     }
 
     public Integer dropShape(Integer dropFrom) {
-        checkCleanFullLines();
-
         if (dropFrom == null) {
             this.currShape = nextShape;
             nextShape();
@@ -75,6 +76,7 @@ public class Canvas {
                     for (Pair<Integer, Integer> prevShapeCoord : prevShapeCoords) {
                         canvasValueMatrix[prevShapeCoord.getRight()][prevShapeCoord.getLeft()] = currShape;
                     }
+
                     return null;
                 }
             }
@@ -86,12 +88,13 @@ public class Canvas {
         return null;
     }
 
-    private void checkCleanFullLines() {
+    public void checkCleanFullLines() {
         //ignoring ceiling and bottom
         for (int row = CEILING_ROW + 1; row < canvasValueMatrix.length - 2; row++) {
             boolean fullRow = true;
             //ignoring walls
             for (int column = 1; column < canvasValueMatrix[0].length - 2; column++) {
+
                 if (canvasValueMatrix[row][column] == null) {
                     fullRow = false;
                     break;
@@ -103,7 +106,6 @@ public class Canvas {
                 moveDownRowsUpTo(row);
             }
         }
-
     }
 
     private void moveDownRowsUpTo(int rowToMoveTo) {
@@ -114,10 +116,9 @@ public class Canvas {
         }
     }
 
-    private Integer drawShape(AbstractShape shape) {
+    private void drawShape(AbstractShape shape) {
         ArrayList<AttributedString> toUpdate = new ArrayList<>();
         addMenuHeader(toUpdate);
-        Integer lastRowFilledWShape = null;
         for (int canvasRow = CEILING_ROW; canvasRow < height; canvasRow++) {
             StringBuilder rowStringBuilder = new StringBuilder();
             for (int canvasColumn = 0; canvasColumn < width; canvasColumn++) {
@@ -127,7 +128,6 @@ public class Canvas {
                     rowStringBuilder.append(shape.getColor());
                     rowStringBuilder.append(shape.getSymbol());
                     rowStringBuilder.append(CLEAR_ANSI_STYLE);
-                    lastRowFilledWShape = canvasRow;
                 } else {
                     if (canvasValueMatrix[canvasRow][canvasColumn] != null) {
                         rowStringBuilder.append(canvasValueMatrix[canvasRow][canvasColumn].getColor());
@@ -141,8 +141,8 @@ public class Canvas {
             AttributedString attributedString = AttributedString.fromAnsi(rowStringBuilder.toString());
             toUpdate.add(attributedString);
         }
+
         display.update(toUpdate, terminal.getSize().cursorPos(0, 0), true);
-        return lastRowFilledWShape;
     }
 
     private void addMenuHeader(List<AttributedString> toUpdate) {
@@ -164,6 +164,33 @@ public class Canvas {
             AttributedString attributedString = AttributedString.fromAnsi(rowStringBuilder.toString());
             toUpdate.add(attributedString);
         }
+    }
+
+    public void printOnDollarScreen(String what, String color) {
+        List<AttributedString> pauseScreen = new ArrayList<>();
+        int halfScreenW = width / 2;
+        int halfScreenL = height / 2;
+
+        for (int row = 0; row < height; row++) {
+            StringBuilder rowStringBuilder = new StringBuilder();
+            for (int column = 0; column < width; column++) {
+                if (row == halfScreenL && column == (halfScreenW - what.length() / 2)) {
+                    rowStringBuilder.append(color);
+                    rowStringBuilder.append(what);
+                    rowStringBuilder.append(CLEAR_ANSI_STYLE);
+                    column += what.length() -1;
+                } else {
+                    rowStringBuilder.append("\u001b[43;1m");
+                    rowStringBuilder.append("$");
+                    rowStringBuilder.append(CLEAR_ANSI_STYLE);
+                }
+            }
+
+            AttributedString attributedString = AttributedString.fromAnsi(rowStringBuilder.toString());
+            pauseScreen.add(attributedString);
+        }
+
+        display.update(pauseScreen, terminal.getSize().cursorPos(0, 0), true);
     }
 
     private void populateValueMatrix() {
@@ -216,6 +243,18 @@ public class Canvas {
         }
     }
 
+    public boolean isGameWon() {
+        synchronized (this) {
+            for (Shape shape: canvasValueMatrix[CEILING_ROW+nextShape.getPositionsLength()]){
+                if (shape !=null && !shape.isWall()) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
     public int getSpeed() {
         return speed;
     }
@@ -226,6 +265,10 @@ public class Canvas {
 
     public void speedUp() {
         speed = 15;
+    }
+
+    public int getScore() {
+        return score;
     }
 
     @Override

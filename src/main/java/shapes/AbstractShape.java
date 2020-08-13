@@ -52,6 +52,10 @@ public abstract class AbstractShape implements Shape {
         return currCoordinates;
     }
 
+    public int getPositionsLength(){
+        return positions[0].length;
+    }
+
     public abstract String getColor();
 
     public boolean isWall(){
